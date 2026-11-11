@@ -1,0 +1,51 @@
+{
+  "name": "galwork-arena",
+  "version": "0.0.2",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "preview": "npx serve ./out",
+    "bpmn-server": "node server/bpmn-files.mjs",
+    "start:local": "node server/bpmn-files.mjs",
+    "lint": "eslint --fix \"src/**/*.{js,jsx,ts,tsx}\"",
+    "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
+    "build:icons": "tsc -b src/iconify-bundle && node src/iconify-bundle/bundle-icons-react.js"
+  },
+  "dependencies": {
+    "@galicea-lab/rjsf-widgets": "^0.1.1",
+    "@galicea-lab/nextjs-keycloak-auth": "^0.1.28",
+    "@iconify/react": "^6.0.2",
+    "@next/bundle-analyzer": "^16.3.5",
+    "@reduxjs/toolkit": "^2.13.0",
+    "@rjsf/core": "^6.11.0",
+    "@rjsf/utils": "^6.11.0",
+    "@rjsf/validator-ajv8": "^6.11.0",
+    "axios": "^1.20.0",
+    "bpmn-js": "^18.31.0",
+    "i18next": "^26.4.2",
+    "next": "^16.0.0",
+    "pkce-challenge": "6.0.0",
+    "react": "^19",
+    "react-aria": "^3.52.1",
+    "react-dom": "^19",
+    "react-redux": "^9.3.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@typescript-eslint/eslint-plugin": "8.70.0",
+    "@typescript-eslint/parser": "8.70.0",
+    "autoprefixer": "^10.6.0",
+    "eslint": "^9.39.5",
+    "eslint-config-next": "^16.3.5",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-import-resolver-typescript": "^4.4.5",
+    "eslint-plugin-import": "^2.29.1",
+    "postcss": "^8.5.28",
+    "prettier": "^3.9.6",
+    "tailwindcss": "^3.4.19",
+    "typescript": "6.0"
+  }
+}
