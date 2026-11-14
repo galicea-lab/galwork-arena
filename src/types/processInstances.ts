@@ -40,6 +40,11 @@ export interface ProcessInstanceRead {
   updated_at: string;
   error_message?: string | null;
   lock_version: number;
+  // 2026-11-13: instancja uruchomiona przez inną (sendTask / szybka akcja)
+  parent_instance_id?: string | null;
+  parent_task_id?: string | null;
+  // 2026-11-13: krok systemowy (np. podpis w Signius) czeka - kolejne sprawdzenie
+  next_wakeup_at?: string | null;
 }
 
 export interface PageProcessInstanceRead {
@@ -54,4 +59,5 @@ export interface ProcessInstanceFilterParams {
   offset?: number;
   status?: ProcessInstanceStatus | null;
   process_model_key?: string | null;
+  parent_instance_id?: string | null; // 2026-11-13: instancje potomne
 }

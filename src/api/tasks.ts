@@ -6,8 +6,20 @@ import {
   TaskClaimRequest,
   TaskCompleteRequest,
 } from '@/types/tasks';
+import { ProcessInstanceRead } from '@/types/processInstances';
 
 export const tasksApi = {
+  /**
+   * 2026-11-13: szybka akcja zadania - uruchamia osobną instancję modelu
+   * `processModelKey` powiązaną z instancją zadania.
+   */
+  async runQuickAction(taskId: string, processModelKey: string): Promise<ProcessInstanceRead> {
+    const response = await apiClient.post<ProcessInstanceRead>(
+      `/tasks/${taskId}/quick-actions/${encodeURIComponent(processModelKey)}`
+    );
+    return response.data;
+  },
+
   /**
    * Skrzynka zadań: podjęte przez użytkownika oraz otwarte, do których ma prawo.
    */

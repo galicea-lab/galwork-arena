@@ -65,6 +65,8 @@ export interface ProcessModelVersionRead {
   published_by?: string | null;
   created_at: string;
   files?: ProcessModelFileRead[];
+  /** 2026-11-13: ostrzeżenia publikacji (np. proces wywoływany bez ioSpecification). */
+  warnings?: string[];
 }
 
 export interface ProcessModelFilterParams {

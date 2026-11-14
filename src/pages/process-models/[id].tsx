@@ -79,7 +79,8 @@ export default function ProcessModelDetailPage() {
 
   const handlePublishVersion = async (versionId: string) => {
     if (typeof id === 'string') {
-      await dispatch(
+      // 2026-11-13: zwracamy opublikowaną wersję - komponent pokazuje `warnings`
+      return dispatch(
         publishProcessModelVersion({
           processModelId: id,
           versionId,

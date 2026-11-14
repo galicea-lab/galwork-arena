@@ -11,6 +11,7 @@ import {
 } from '@/store/tasks';
 import {
   TaskDetail,
+  TaskQuickActions,
   TaskClaimModal,
   TaskCompleteModal,
   LoadingSpinner,
@@ -87,6 +88,9 @@ export default function TaskDetailPage() {
           onClaimClick={() => setClaimModalOpen(true)}
           onCompleteClick={() => setCompleteModalOpen(true)}
         />
+
+        {/* 2026-11-13: szybkie akcje zadania (quickAction w BPMN) */}
+        <TaskQuickActions task={selectedTask} />
 
         {/* Claim Modal */}
         <TaskClaimModal

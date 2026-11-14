@@ -4,6 +4,7 @@ import { Icon } from '@iconify/react';
 import { ProcessInstanceRead } from '@/types/processInstances';
 import { CommentRead, CommentCreate } from '@/types/comments';
 import { ProcessInstanceStatusBadge } from './ProcessInstanceStatusBadge';
+import { RelatedInstances } from './RelatedInstances';
 import { CommentList } from '@/components/comments/CommentList';
 import { CommentForm } from '@/components/comments/CommentForm';
 
@@ -13,6 +14,8 @@ interface ProcessInstanceDetailProps {
   commentsLoading?: boolean;
   onAddComment?: (data: CommentCreate) => Promise<unknown>;
   onActionClick: (actionType: 'cancel' | 'suspend' | 'resume') => void;
+  /* "Sprawdź teraz" - kroki systemowe (POST /wake). */
+  onWakeClick?: () => Promise<unknown>;
   loading?: boolean;
 }
 
@@ -22,7 +25,9 @@ export const ProcessInstanceDetail: React.FC<ProcessInstanceDetailProps> = ({
   commentsLoading = false,
   onAddComment,
   onActionClick,
+  onWakeClick,
 }) => {
+  const [waking, setWaking] = useState(false);
   const [activeTab, setActiveTab] = useState<'details' | 'summary' | 'comments'>('details');
 
   const canCancel = ['running', 'waiting', 'suspended'].includes(instance.status);
@@ -92,6 +97,37 @@ export const ProcessInstanceDetail: React.FC<ProcessInstanceDetailProps> = ({
           </div>
         </div>
 
+        {/* 2026-11-13: krok systemowy czeka na wynik (np. podpis w Signius) */}
+        {instance.next_wakeup_at && (
+          <div className="mt-5 p-4 rounded-xl bg-sky-50 border border-sky-200 text-sky-800 text-xs flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-2">
+              <Icon icon="mdi:timer-sand" className="w-5 h-5 text-sky-600 shrink-0" />
+              <span>
+                Proces czeka na wynik kroku systemowego. Kolejne sprawdzenie:{' '}
+                <span className="font-semibold">{new Date(instance.next_wakeup_at).toLocaleString()}</span>
+              </span>
+            </div>
+            {onWakeClick && (
+              <button
+                type="button"
+                disabled={waking}
+                onClick={async () => {
+                  setWaking(true);
+                  try {
+                    await onWakeClick();
+                  } finally {
+                    setWaking(false);
+                  }
+                }}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-sky-700 bg-white hover:bg-sky-100 border border-sky-200 rounded-lg transition-colors disabled:opacity-50"
+              >
+                <Icon icon={waking ? 'mdi:loading' : 'mdi:refresh'} className={`w-4 h-4 ${waking ? 'animate-spin' : ''}`} />
+                Sprawdź teraz
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Error message banner if present */}
         {instance.error_message && (
           <div className="mt-5 p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-3">
@@ -131,6 +167,9 @@ export const ProcessInstanceDetail: React.FC<ProcessInstanceDetailProps> = ({
           </div>
         </div>
       </div>
+
+      {/* 2026-11-13: instancja nadrzędna i uruchomione z tej instancji */}
+      <RelatedInstances instance={instance} />
 
       {/* Tabs / Subsections */}
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-xs">

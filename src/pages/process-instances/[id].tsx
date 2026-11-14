@@ -4,6 +4,7 @@ import { useRouter } from 'next/router';
 import Link from 'next/link';
 import { Icon } from '@iconify/react';
 import { useAppDispatch, useAppSelector } from '@/store';
+import { processInstancesApi } from '@/api/processInstances';
 import {
   fetchProcessInstance,
   cancelProcessInstance,
@@ -109,6 +110,11 @@ export default function ProcessInstanceDetailPage() {
           commentsLoading={commentsLoading}
           onAddComment={handleAddComment}
           onActionClick={handleActionClick}
+          onWakeClick={async () => {
+            // 2026-11-13: kroki systemowe (np. status podpisu w Signius)
+            await processInstancesApi.wakeProcessInstance(selectedInstance.id);
+            dispatch(fetchProcessInstance(selectedInstance.id));
+          }}
         />
 
         {/* Action Modal (Cancel / Suspend / Resume) */}

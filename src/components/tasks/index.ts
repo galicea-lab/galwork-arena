@@ -4,3 +4,4 @@ export * from './TaskClaimModal';
 export * from './TaskCompleteModal';
 export * from './TaskList';
 export * from './TaskDetail';
+export * from './TaskQuickActions';

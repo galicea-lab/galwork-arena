@@ -131,7 +131,15 @@ export const StartProcessInstanceModal: React.FC<StartProcessInstanceModalProps>
       });
       onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : 'Wystąpił błąd podczas uruchamiania instancji');
+      // 2026-11-13: unwrap() thunku rzuca komunikat API (string), np. 422
+      // "Dane startowe są nieprawidłowe: ..." z walidacji formularza startowego
+      setError(
+        typeof err === 'string'
+          ? err
+          : err instanceof Error
+            ? err.message
+            : 'Wystąpił błąd podczas uruchamiania instancji'
+      );
     }
   };
 

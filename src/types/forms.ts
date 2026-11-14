@@ -35,6 +35,14 @@ export interface TaskFormRead {
   form_data: Record<string, unknown>;
   documents: TaskFormDocument[];
   process_lock_version: number;
+  /** 2026-11-13: przyciski "Uruchom ..." (`quickAction` w BPMN zadania). */
+  quick_actions?: QuickAction[];
+}
+
+/** 2026-11-13: szybka akcja zadania - uruchamia instancję innego modelu. */
+export interface QuickAction {
+  process_model_key: string;
+  label: string;
 }
 
 /** Odpowiedź `GET /process-models/{process_model_key}/start-form` (ProcessFormRead). */

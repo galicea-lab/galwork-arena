@@ -37,6 +37,15 @@ export const processInstancesApi = {
   },
 
   /**
+   * 2026-11-13: ponownie wykonuje czekające kroki systemowe (serviceTask),
+   * np. sprawdza status podpisu w Signius - bez czekania na cron.
+   */
+  async wakeProcessInstance(instanceId: string): Promise<ProcessInstanceRead> {
+    const response = await apiClient.post<ProcessInstanceRead>(`/process-instances/${instanceId}/wake`);
+    return response.data;
+  },
+
+  /**
    * Anuluje instancję procesu.
    */
   async cancelProcessInstance(

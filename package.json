@@ -1,6 +1,6 @@
 {
   "name": "galwork-arena",
-  "version": "0.0.2",
+  "version": "0.1.2",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -10,6 +10,8 @@
     "start:local": "node server/bpmn-files.mjs",
     "lint": "eslint --fix \"src/**/*.{js,jsx,ts,tsx}\"",
     "format": "prettier --write \"src/**/*.{js,jsx,ts,tsx}\"",
+    "check:ai": "node scripts/check-ai-comments.mjs",
+    "check:ai:release": "node scripts/check-ai-comments.mjs --release",
     "build:icons": "tsc -b src/iconify-bundle && node src/iconify-bundle/bundle-icons-react.js"
   },
   "dependencies": {

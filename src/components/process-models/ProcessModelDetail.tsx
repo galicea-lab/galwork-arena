@@ -41,14 +41,33 @@ export const ProcessModelDetail: React.FC<ProcessModelDetailProps> = ({
 }) => {
   const [versionToPublish, setVersionToPublish] = useState<ProcessModelVersionRead | null>(null);
   const [publishing, setPublishing] = useState(false);
+  // 2026-11-13: wynik publikacji - błąd (np. 409: proces wywoływany nie jest
+  // opublikowany) albo ostrzeżenia huba; wcześniej błąd ginął bez śladu.
+  const [publishNotice, setPublishNotice] = useState<{ kind: 'error' | 'warning'; messages: string[] } | null>(
+    null
+  );
 
   const handleConfirmPublish = async () => {
     if (!versionToPublish || !onPublishVersion) return;
     setPublishing(true);
+    setPublishNotice(null);
     try {
-      await onPublishVersion(versionToPublish.id);
-      setVersionToPublish(null);
+      const published = (await onPublishVersion(versionToPublish.id)) as ProcessModelVersionRead | undefined;
+      const warnings = published?.warnings ?? [];
+      setPublishNotice(warnings.length > 0 ? { kind: 'warning', messages: warnings } : null);
+    } catch (err: unknown) {
+      setPublishNotice({
+        kind: 'error',
+        messages: [
+          typeof err === 'string'
+            ? err
+            : err instanceof Error
+              ? err.message
+              : 'Nie udało się opublikować wersji.',
+        ],
+      });
     } finally {
+      setVersionToPublish(null);
       setPublishing(false);
     }
   };
@@ -57,6 +76,42 @@ export const ProcessModelDetail: React.FC<ProcessModelDetailProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* 2026-11-13: błąd albo ostrzeżenia publikacji wersji */}
+      {publishNotice && (
+        <div
+          className={`p-4 rounded-xl border text-xs flex items-start gap-3 ${
+            publishNotice.kind === 'error'
+              ? 'bg-rose-50 border-rose-200 text-rose-800'
+              : 'bg-amber-50 border-amber-200 text-amber-800'
+          }`}
+        >
+          <Icon
+            icon={publishNotice.kind === 'error' ? 'mdi:alert-octagon' : 'mdi:alert-outline'}
+            className="w-5 h-5 shrink-0 mt-0.5"
+          />
+          <div className="flex-1">
+            <span className="font-bold block mb-1">
+              {publishNotice.kind === 'error'
+                ? 'Nie opublikowano wersji'
+                : 'Wersja opublikowana z ostrzeżeniami'}
+            </span>
+            <ul className="space-y-1 list-disc pl-4">
+              {publishNotice.messages.map((message) => (
+                <li key={message}>{message}</li>
+              ))}
+            </ul>
+          </div>
+          <button
+            type="button"
+            onClick={() => setPublishNotice(null)}
+            className="text-current opacity-60 hover:opacity-100"
+            aria-label="Zamknij"
+          >
+            <Icon icon="mdi:close" className="w-4 h-4" />
+          </button>
+        </div>
+      )}
+
       {/* Top Header Card */}
       <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-xs">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
