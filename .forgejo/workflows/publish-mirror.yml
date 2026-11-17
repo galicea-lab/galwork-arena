@@ -45,12 +45,13 @@ jobs:
           MIRROR_REPO: galicea-lab/galwork-arena
         run: |
           set -euo pipefail
-          test -n "$MIRROR_TOKEN"
-          test -n "$MIRROR_REPO"
+          [ -n "$MIRROR_TOKEN" ] || { echo "::error::Brak sekretu MIRROR_TOKEN w ustawieniach repozytorium (Settings → Actions → Secrets)"; exit 1; }
+          [ -n "$MIRROR_REPO" ]  || { echo "::error::Brak zmiennej MIRROR_REPO"; exit 1; }
 
           git clone --depth 1 \
             "https://x-access-token:${MIRROR_TOKEN}@github.com/${MIRROR_REPO}.git" \
-            "$RUNNER_TEMP/mirror"
+            "$RUNNER_TEMP/mirror" \
+            || { echo "::error::Nie udało się sklonować github.com/${MIRROR_REPO} – sprawdź, czy MIRROR_TOKEN jest ważny i ma dostęp do tego repozytorium"; exit 1; }
 
           find "$RUNNER_TEMP/mirror" -mindepth 1 -maxdepth 1 \
             ! -name .git -exec rm -rf {} +
@@ -68,4 +69,5 @@ jobs:
             exit 0
           fi
           git commit -m "${{ github.ref_name }}"
-          git push origin HEAD:main
+          git push origin HEAD:main \
+            || { echo "::error::Push do github.com/${MIRROR_REPO} nie powiódł się – token potrzebuje uprawnienia Contents: Read and write"; exit 1; }

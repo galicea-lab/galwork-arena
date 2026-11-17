@@ -1,17 +1,11 @@
-import CONFIG from '@/configs/config'
+import { apiClient } from '@/api/client'
+import { readProcessFile, writeProcessFile, ProcessFileSaveResult } from '@/api/processFiles'
 
-/**
- * Klient lokalnego serwera plików BPMN (server/bpmn-files.mjs).
- *
- * Służy do bezpośredniej edycji definicji .bpmn w katalogu spiffworkflow/
- * na maszynie, na której uruchomiona jest aplikacja - analogicznie do
- * spiffworkflow-arena w trybie pracy na plikach serwera.
+/* 2026-11-15: klient plików .bpmn w katalogu obiegów huba
+ * (GET/PUT /v1/wf/process-files...) - zastąpił server/bpmn-files.mjs.
  *
  * Wysyłka do backendu procesowego (nowa wersja draft) odbywa się osobno,
- * przez processModelsApi - zob. processModels.createProcessModelVersion.
- */
-
-const baseUrl = (CONFIG?.bpmn_files_url || '').replace(/\/+$/, '')
+ * przez processModelsApi - zob. processModels.createProcessModelVersion. */
 
 export interface BpmnFileListResult {
   root: string
@@ -23,52 +17,28 @@ export interface BpmnFileContent {
   content: string
 }
 
-export interface BpmnFileSaveResult {
-  path: string
-  saved: boolean
-}
+export type BpmnFileSaveResult = ProcessFileSaveResult
 
-async function parseError(response: Response): Promise<string> {
-  try {
-    const data = await response.json()
-    if (data && typeof data.detail === 'string') return data.detail
-  } catch {
-    // brak treści JSON
-  }
-  return `Błąd serwera plików BPMN (HTTP ${response.status})`
-}
-
-async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
-  let response: Response
-  try {
-    response = await fetch(url, init)
-  } catch {
-    throw new Error(`Brak połączenia z serwerem plików BPMN (${baseUrl}). ` + 'Uruchom: node server/bpmn-files.mjs')
-  }
-  if (!response.ok) {
-    throw new Error(await parseError(response))
-  }
-  return (await response.json()) as T
+interface ProcessFileList {
+  root: string
+  files: { path: string; kind: string }[]
 }
 
 export const bpmnFilesApi = {
-  /** Lista plików .bpmn w katalogu spiffworkflow/ (ścieżki względne). */
+  /** Lista plików .bpmn w katalogu obiegów (ścieżki względne). */
   async listFiles(): Promise<BpmnFileListResult> {
-    return requestJson<BpmnFileListResult>(`${baseUrl}/api/bpmn/files`)
+    const { data } = await apiClient.get<ProcessFileList>('/process-files', { params: { kind: 'bpmn' } })
+    return { root: data.root, files: data.files.map(file => file.path) }
   },
 
   /** Treść pojedynczego pliku .bpmn. */
   async readFile(relativePath: string): Promise<BpmnFileContent> {
-    return requestJson<BpmnFileContent>(`${baseUrl}/api/bpmn/file?path=${encodeURIComponent(relativePath)}`)
+    return readProcessFile(relativePath)
   },
 
-  /** Zapis treści pliku .bpmn na dysku serwera. */
+  /** Zapis treści pliku .bpmn (hub waliduje, zapisuje i commituje). */
   async writeFile(relativePath: string, content: string): Promise<BpmnFileSaveResult> {
-    return requestJson<BpmnFileSaveResult>(`${baseUrl}/api/bpmn/file`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ path: relativePath, content })
-    })
+    return writeProcessFile(relativePath, content)
   }
 }
 

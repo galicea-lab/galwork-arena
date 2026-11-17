@@ -6,13 +6,9 @@
 # (mapowanie scope'a w galwork-arena/.npmrc). Kontekst builda to
 # katalog nadrzędny (/projekty/galwork), zgodnie z docker-compose.yml.
 #
-# JW 2-11-2026
-# Edytory BPMN/formularzy (server/bpmn-files.mjs, Node) NIE są częścią
-# tego obrazu - brak w nim autoryzacji i zapisuje bezpośrednio na dysk.
-# Dlatego działa jako osobny serwis bpmn-files (docker-compose.yml)
-# za nginx hosta z hasłem; NEXT_PUBLIC_BPMN_FILES_URL=/bpmn-files musi być
-# podane przy buildzie (puste = wywołania na /api/... areny i 404).
-# TODO: zastąpienie serwra wymianą przez API z galwork-hub
+# 2026-11-15: edytory BPMN/formularzy czytają i zapisują pliki obiegów
+# przez API huba (/v1/wf/process-files) - osobny serwer plików nie jest
+# już potrzebny.
 
 FROM node:20-alpine AS build
 WORKDIR /build
@@ -29,11 +25,9 @@ COPY galwork-arena/ ./
 ARG NEXT_PUBLIC_API_URL=""
 ARG NEXT_PUBLIC_KEYCLOAK_URL
 ARG NEXT_PUBLIC_KEYCLOAK_CLIENT
-ARG NEXT_PUBLIC_BPMN_FILES_URL=""
 ENV NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL} \
     NEXT_PUBLIC_KEYCLOAK_URL=${NEXT_PUBLIC_KEYCLOAK_URL} \
-    NEXT_PUBLIC_KEYCLOAK_CLIENT=${NEXT_PUBLIC_KEYCLOAK_CLIENT} \
-    NEXT_PUBLIC_BPMN_FILES_URL=${NEXT_PUBLIC_BPMN_FILES_URL}
+    NEXT_PUBLIC_KEYCLOAK_CLIENT=${NEXT_PUBLIC_KEYCLOAK_CLIENT}
 
 RUN npm run build
 

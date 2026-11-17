@@ -14,6 +14,7 @@ import {
   type FormFilePair
 } from '@/api/formFiles'
 import { extractApiError } from '@/api/client'
+import { describeSave, ProcessFileSaveResult } from '@/api/processFiles'
 import { SchemaForm } from '@/components/forms'
 
 /**
@@ -21,7 +22,7 @@ import { SchemaForm } from '@/components/forms'
  * spiffworkflow/, edytowana jednocześnie w dwóch panelach kodu.
  *
  * Wybór plików jest analogiczny do edytora BPMN (/bpmn): lista par plików
- * z lokalnego serwera (server/bpmn-files.mjs) i zapis bezpośrednio na dysku.
+ * z katalogu obiegów huba (API /v1/wf/process-files), zapis przez hub.
  * Założenie: jeden formularz na cały obieg (schema.json + ioschema.json),
  * ale obsługiwane są też pary *-schema.json / *-uischema.json używane przez
  * SpiffWorkflow/SpiffArena.
@@ -244,8 +245,10 @@ export default function FormsEditorPage() {
     setSaving(true)
     setNotice(null)
     try {
-      if (writeSchema) await formFilesApi.writeFile(nextSchemaPath, schemaText)
-      if (writeUi) await formFilesApi.writeFile(nextUiPath, uiContent)
+      // 2026-11-15: hub zwraca ostrzeżenia walidacji i ewentualny błąd commita
+      const results: ProcessFileSaveResult[] = []
+      if (writeSchema) results.push(await formFilesApi.writeFile(nextSchemaPath, schemaText))
+      if (writeUi) results.push(await formFilesApi.writeFile(nextUiPath, uiContent))
 
       setSelected({ ...selected, schemaPath: nextSchemaPath, uiSchemaPath: nextUiPath })
       setUiText(uiContent)
@@ -253,7 +256,7 @@ export default function FormsEditorPage() {
       setSavedUi(uiContent)
       setNotice({
         kind: 'success',
-        text: `Zapisano formularz: ${selected.dir || 'spiffworkflow'} (schema + uiSchema)`
+        text: `Zapisano formularz: ${selected.dir || 'spiffworkflow'} (schema + uiSchema).${describeSave(results)}`
       })
       void loadList()
     } catch (err) {

@@ -13,6 +13,9 @@ server {
     # API galwork-hub pod tym samym originem - src/api/client.ts woła
     # względne '/v1/wf/...', gdy NEXT_PUBLIC_API_URL jest puste (produkcja).
     location /v1/ {
+        # 2026-11-15: zapis plików obiegów z edytorów (PUT /v1/wf/process-files/content)
+        # - hub przyjmuje do 25 MB, nginx domyślnie 1 MB.
+        client_max_body_size 25m;
         proxy_pass ${HUB_UPSTREAM}/v1/;
         proxy_http_version 1.1;
         proxy_set_header Host $host;
@@ -20,12 +23,6 @@ server {
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
     }
-
-    # JW 2026-10-29: edytory BPMN/formularzy (server/bpmn-files.mjs) nie
-    # przechodzą przez ten kontener - ścieżkę /bpmn-files/ obsługuje nginx
-    # hosta (galwork_arena.conf, z hasłem), proxując do serwisu bpmn-files
-    # z docker-compose.yml. NEXT_PUBLIC_BPMN_FILES_URL musi być ustawione
-    # (puste = wywołania na /api/... areny i 404). Patrz src/configs/config.ts.
 
     # `output: 'export'` + trailingSlash:true -> pliki *.../index.html.
     location / {

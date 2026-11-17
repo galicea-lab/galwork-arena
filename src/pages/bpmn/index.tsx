@@ -5,6 +5,7 @@ import { Icon } from '@iconify/react'
 import BpmnFileBrowser from '@/components/bpmn/BpmnFileBrowser'
 import BpmnPublishModal, { BpmnPublishPayload } from '@/components/bpmn/BpmnPublishModal'
 import { bpmnFilesApi, BpmnFileListResult } from '@/api/bpmnFiles'
+import { describeSave } from '@/api/processFiles'
 import { processModelsApi } from '@/api/processModels'
 import { extractApiError } from '@/api/client'
 import { EMPTY_BPMN_XML } from '@/components/bpmn/constants'
@@ -137,9 +138,10 @@ export default function BpmnPage() {
         setNotice({ kind: 'error', text: 'Nie udało się wyeksportować XML z edytora.' })
         return
       }
-      await bpmnFilesApi.writeFile(selectedPath, xml)
+      const saved = await bpmnFilesApi.writeFile(selectedPath, xml)
       setDirty(false)
-      setNotice({ kind: 'success', text: `Zapisano: ${selectedPath}` })
+      // 2026-11-15: hub zwraca ostrzeżenia walidacji i ewentualny błąd commita
+      setNotice({ kind: 'success', text: `Zapisano: ${selectedPath}.${describeSave([saved])}` })
     } catch (err) {
       setNotice({ kind: 'error', text: extractApiError(err) })
     } finally {

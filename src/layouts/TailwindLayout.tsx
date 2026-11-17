@@ -76,6 +76,8 @@ const TailwindLayout = ({ children }: Props) => {
         { title: 'Powiadomienia', path: '/notifications', icon: 'mdi:bell-outline' },
         { title: 'Edytor BPMN', path: '/bpmn', icon: 'mdi:file-document-multiple-outline' },
         { title: 'Edytor formularzy', path: '/forms', icon: 'mdi:code-json' },
+        // 2026-11-16: szablony wydruków PDF obiegów
+        { title: 'Edytor wydruków', path: '/prints', icon: 'mdi:file-pdf-box' },
       ],
     },
     // JW 2026-10-17: grupa widoczna tylko dla `galwork-admin` (zob./ useIsAdmin), nie dla zwykłych użytkowników.
